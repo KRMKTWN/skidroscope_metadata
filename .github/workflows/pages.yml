@@ -42,4 +42,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Redeploy after replacing MUSIC link with LimeWire nMAMU#qwJW6Jxi5J.
+# Frozen release: article corrections, AK14, inline PNG visuals, NOT EDITED support line, and non-sticky top masthead.
