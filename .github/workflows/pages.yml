@@ -42,4 +42,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Redeploy after fixing landing page navigation and reducing links-page wordmark.
+# Redeploy after final minimal SKiDROSCOPE links page update.
