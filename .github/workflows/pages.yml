@@ -42,4 +42,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Republish frozen release: justified article text, support credit without NOT EDITED, AK14, inline PNG visuals, and non-sticky top masthead.
+# Final proofread release: corrected English, removed review/progress bars, kept justified article text and current credits.
