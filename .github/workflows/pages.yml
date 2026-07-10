@@ -42,4 +42,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Frozen release: article corrections, AK14, inline PNG visuals, NOT EDITED support line, and non-sticky top masthead.
+# Frozen release: justified article text, support credit without NOT EDITED, AK14, inline PNG visuals, and non-sticky top masthead.
