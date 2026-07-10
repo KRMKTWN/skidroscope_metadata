@@ -41,4 +41,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Redeploy after JOIN form and contributor credits update.
+# Redeploy after replacing MODE/FASHION visual with SKIDROW_LOVERS_SAN_PEDRO_001.
