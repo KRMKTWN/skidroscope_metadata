@@ -30,6 +30,7 @@ jobs:
           tar -xzf site.tar.gz -C public
           rm -rf public/.github public/source
           test -f public/index.html
+          test -f public/links.html
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload website
@@ -41,4 +42,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Redeploy after replacing MODE/FASHION visual with SKIDROW_LOVERS_SAN_PEDRO_001.
+# Redeploy after adding standalone SKiDROSCOPE links page.
