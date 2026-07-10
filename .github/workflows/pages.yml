@@ -42,4 +42,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Final proofread release: corrected English, removed review/progress bars, kept justified article text and current credits.
+# Final correction: removed duplicate native audio controls bar; hidden icon player remains.
