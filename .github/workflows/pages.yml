@@ -42,4 +42,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Article body now uses PNG picture files only: Article01.png and Article02.png.
+# Published gallery replacement: 3 PNGs for SPRAY / BREATHE / STAY, 3 PNGs for WHAT RESISTS WEAR, plus FallAnnouncement.png below the unchanged announcement text.
