@@ -42,4 +42,4 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # GitHub Pages activation confirmed.
-# Redeploy after final minimal SKiDROSCOPE links page update.
+# Redeploy after replacing MUSIC link with LimeWire nMAMU#qwJW6Jxi5J.
