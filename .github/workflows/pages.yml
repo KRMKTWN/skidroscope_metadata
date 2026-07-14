@@ -32,6 +32,27 @@ jobs:
           test -f public/index.html
           rm -rf public/.github public/source
 
+      - name: Remove retired image from site
+        run: |
+          rm -f public/Wear03.png
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          for path in Path('public').rglob('*'):
+              if path.suffix.lower() not in {'.html', '.htm', '.css', '.js'}:
+                  continue
+              text = path.read_text(encoding='utf-8', errors='ignore')
+              text = re.sub(
+                  r'<img\b[^>]*\bsrc=["\'](?:\./)?Wear03\.png["\'][^>]*>',
+                  '',
+                  text,
+                  flags=re.IGNORECASE,
+              )
+              text = text.replace('Wear03.png', '')
+              path.write_text(text, encoding='utf-8')
+          PY
+
       - name: Add email gate over original homepage
         run: |
           python - <<'PY'
