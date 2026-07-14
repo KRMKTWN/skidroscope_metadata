@@ -30,9 +30,69 @@ jobs:
           mkdir -p public
           tar -xzf site.tar.gz -C public
           test -f public/index.html
-          mv public/index.html public/home.html
-          cp index.html public/index.html
           rm -rf public/.github public/source
+
+      - name: Add email gate over original homepage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('public/index.html')
+          html = path.read_text(encoding='utf-8')
+
+          gate = r'''
+          <style id="skidroscope-gate-style">
+            #skidroscope-gate{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:28px;background:#050505;color:#f5f5f0;font-family:Arial,Helvetica,sans-serif}
+            #skidroscope-gate *{box-sizing:border-box}
+            #skidroscope-gate .gate-inner{width:min(760px,100%);text-align:center}
+            #skidroscope-gate h1{margin:0 0 64px;font-size:clamp(2.4rem,8vw,6.5rem);line-height:.9;letter-spacing:-.065em;text-transform:uppercase;font-weight:900}
+            #skidroscope-gate form{display:grid;grid-template-columns:1fr auto;border-bottom:2px solid #f5f5f0;gap:16px;align-items:center}
+            #skidroscope-gate input,#skidroscope-gate button{font:inherit}
+            #skidroscope-gate input{min-width:0;padding:18px 0;color:#f5f5f0;background:transparent;border:0;outline:0;font-size:clamp(1rem,3vw,1.45rem)}
+            #skidroscope-gate input::placeholder{color:#8e8e88;text-transform:uppercase}
+            #skidroscope-gate button{padding:18px 0 18px 20px;color:#f5f5f0;background:transparent;border:0;cursor:pointer;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+            #skidroscope-gate .gate-error{min-height:1.3em;margin:14px 0 0;color:#8e8e88;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+            @media(max-width:620px){#skidroscope-gate h1{margin-bottom:46px}#skidroscope-gate form{grid-template-columns:1fr;gap:0}#skidroscope-gate button{padding:16px 0;text-align:left}}
+          </style>
+          <div id="skidroscope-gate">
+            <div class="gate-inner">
+              <h1>If you ain’t paying,<br>you’re what’s being sold.</h1>
+              <form id="skidroscope-email-form" novalidate>
+                <input id="skidroscope-email" type="email" autocomplete="email" placeholder="Your email address" required aria-label="Email address">
+                <button type="submit">Enter →</button>
+              </form>
+              <p class="gate-error" id="skidroscope-error" role="alert"></p>
+            </div>
+          </div>
+          <script>
+            (()=>{
+              const gate=document.getElementById('skidroscope-gate');
+              const form=document.getElementById('skidroscope-email-form');
+              const email=document.getElementById('skidroscope-email');
+              const error=document.getElementById('skidroscope-error');
+              form.addEventListener('submit',(event)=>{
+                event.preventDefault();
+                if(!email.value.trim()||!email.checkValidity()){
+                  error.textContent='Drop a valid email first.';
+                  email.focus();
+                  return;
+                }
+                localStorage.setItem('skidroscope_email',email.value.trim());
+                gate.remove();
+                document.getElementById('skidroscope-gate-style')?.remove();
+              });
+            })();
+          </script>
+          '''
+
+          if '</body>' in html.lower():
+              idx = html.lower().rfind('</body>')
+              html = html[:idx] + gate + html[idx:]
+          else:
+              html += gate
+
+          path.write_text(html, encoding='utf-8')
+          PY
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
