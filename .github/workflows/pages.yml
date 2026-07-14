@@ -53,6 +53,43 @@ jobs:
               path.write_text(text, encoding='utf-8')
           PY
 
+      - name: Add privacy-respecting visit counter
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          tracker = r'''
+          <script id="skidroscope-private-counter">
+          (()=>{
+            try{
+              let visitorId=localStorage.getItem('skidroscope_visitor_id');
+              if(!visitorId){
+                visitorId=crypto.randomUUID();
+                localStorage.setItem('skidroscope_visitor_id',visitorId);
+              }
+              fetch('https://guujnlydcqhpedmcrtnz.supabase.co/functions/v1/track-visit',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({visitorId,page:location.pathname})
+              }).catch(()=>{});
+            }catch(_error){}
+          })();
+          </script>
+          '''
+
+          for path in Path('public').rglob('*.html'):
+              html = path.read_text(encoding='utf-8', errors='ignore')
+              if 'skidroscope-private-counter' in html:
+                  continue
+              lower = html.lower()
+              if '</body>' in lower:
+                  idx = lower.rfind('</body>')
+                  html = html[:idx] + tracker + html[idx:]
+              else:
+                  html += tracker
+              path.write_text(html, encoding='utf-8')
+          PY
+
       - name: Add email gate over original homepage
         run: |
           python - <<'PY'
