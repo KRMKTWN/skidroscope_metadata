@@ -32,25 +32,63 @@ jobs:
           test -f public/index.html
           rm -rf public/.github public/source
 
-      - name: Remove retired image from site
+      - name: Add looping fashion preview to existing image slot
         run: |
-          rm -f public/Wear03.png
+          mkdir -p public/skidroscope-fashion
+          for n in 1 2 3 4 5; do
+            curl -L --fail --retry 5 --retry-delay 2 \
+              "https://docs.google.com/presentation/d/16a63kNNVBXgyyPBVDC7A7PEvEIVCgEO0Ozv59H5lf_A/export/png?pageid=p${n}" \
+              -o "public/skidroscope-fashion/look-${n}.png"
+          done
+
           python - <<'PY'
           from pathlib import Path
           import re
 
+          slider = r'''
+          <div class="skidroscope-fashion-loop" aria-label="SKiDROSCOPE future fashion pages preview">
+            <img src="skidroscope-fashion/look-1.png" alt="SKiDROSCOPE fashion preview 1">
+            <img src="skidroscope-fashion/look-2.png" alt="SKiDROSCOPE fashion preview 2">
+            <img src="skidroscope-fashion/look-3.png" alt="SKiDROSCOPE fashion preview 3">
+            <img src="skidroscope-fashion/look-4.png" alt="SKiDROSCOPE fashion preview 4">
+            <img src="skidroscope-fashion/look-5.png" alt="SKiDROSCOPE fashion preview 5">
+          </div>
+          '''
+
+          style = r'''
+          <style id="skidroscope-fashion-loop-style">
+            .skidroscope-fashion-loop{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#050505}
+            .skidroscope-fashion-loop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;animation:skidroscopeFashionLoop 25s infinite ease-in-out}
+            .skidroscope-fashion-loop img:nth-child(1){animation-delay:0s}
+            .skidroscope-fashion-loop img:nth-child(2){animation-delay:5s}
+            .skidroscope-fashion-loop img:nth-child(3){animation-delay:10s}
+            .skidroscope-fashion-loop img:nth-child(4){animation-delay:15s}
+            .skidroscope-fashion-loop img:nth-child(5){animation-delay:20s}
+            @keyframes skidroscopeFashionLoop{0%{opacity:0;transform:scale(1.015)}4%{opacity:1}18%{opacity:1;transform:scale(1)}22%{opacity:0}100%{opacity:0}}
+            @media(prefers-reduced-motion:reduce){.skidroscope-fashion-loop img{animation:none;opacity:0}.skidroscope-fashion-loop img:first-child{opacity:1}}
+          </style>
+          '''
+
+          replaced = False
           for path in Path('public').rglob('*'):
-              if path.suffix.lower() not in {'.html', '.htm', '.css', '.js'}:
+              if path.suffix.lower() not in {'.html', '.htm'}:
                   continue
               text = path.read_text(encoding='utf-8', errors='ignore')
-              text = re.sub(
-                  r'<img\b[^>]*\bsrc=["\'](?:\./)?Wear03\.png["\'][^>]*>',
-                  '',
-                  text,
-                  flags=re.IGNORECASE,
-              )
-              text = text.replace('Wear03.png', '')
-              path.write_text(text, encoding='utf-8')
+              pattern = r'<img\b[^>]*\bsrc=["\'](?:\./)?Wear03\.png["\'][^>]*>'
+              updated, count = re.subn(pattern, slider, text, count=1, flags=re.IGNORECASE)
+              if count:
+                  if 'skidroscope-fashion-loop-style' not in updated:
+                      head = updated.lower().find('</head>')
+                      if head >= 0:
+                          updated = updated[:head] + style + updated[head:]
+                      else:
+                          updated = style + updated
+                  path.write_text(updated, encoding='utf-8')
+                  replaced = True
+                  break
+
+          if not replaced:
+              raise SystemExit('Wear03.png image slot was not found; refusing to alter another part of the design.')
           PY
 
       - name: Add privacy-respecting visit counter
