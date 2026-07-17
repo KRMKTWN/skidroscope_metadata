@@ -5,72 +5,132 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SKiDROSCOPE</title>
   <style>
-    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#050505;color:#f5f5f0;font-family:Arial,Helvetica,sans-serif}main{min-height:100vh;display:grid;place-items:center;padding:28px}.gate{width:min(760px,100%);text-align:center}h1{margin:0 0 64px;font-size:clamp(2.4rem,8vw,6.5rem);line-height:.9;letter-spacing:-.065em;text-transform:uppercase;font-weight:900}.form{display:grid;grid-template-columns:1fr auto;border-bottom:2px solid #f5f5f0;gap:16px;align-items:center}input,button{font:inherit}.email-input{min-width:0;padding:18px 0;color:#f5f5f0;background:transparent;border:0;outline:0;font-size:clamp(1rem,3vw,1.45rem)}.email-input::placeholder{color:#8e8e88;text-transform:uppercase}button{padding:18px 0 18px 20px;color:#f5f5f0;background:transparent;border:0;cursor:pointer;font-weight:800;text-transform:uppercase;letter-spacing:.08em}button:disabled{cursor:wait;opacity:.55}.consent{grid-column:1/-1;display:flex;gap:10px;align-items:flex-start;margin:18px 0 0;text-align:left;color:#a6a69f;font-size:.78rem;line-height:1.45;letter-spacing:.03em}.consent input{margin-top:2px;accent-color:#f5f5f0}.error{grid-column:1/-1;min-height:1.3em;margin:14px 0 0;color:#8e8e88;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}.success{color:#f5f5f0}@media(max-width:620px){h1{margin-bottom:46px}.form{grid-template-columns:1fr;gap:0}button{padding:16px 0;text-align:left}}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#050505;color:#f5f5f0;font-family:Arial,Helvetica,sans-serif}
+    body{display:flex;min-height:100vh;flex-direction:column}
+    main{flex:1;display:grid;place-items:center;padding:48px 28px}
+    .gate{width:min(760px,100%);text-align:center}
+    h1{margin:0 0 64px;font-size:clamp(2.4rem,8vw,6.5rem);line-height:.9;letter-spacing:-.065em;text-transform:uppercase;font-weight:900}
+    .signup-form{display:grid;grid-template-columns:1fr auto;border-bottom:2px solid #f5f5f0;gap:16px;align-items:center}
+    input,button{font:inherit}
+    .email-input{min-width:0;padding:18px 0;color:#f5f5f0;background:transparent;border:0;outline:0;font-size:clamp(1rem,3vw,1.45rem)}
+    .email-input::placeholder{color:#8e8e88;text-transform:uppercase}
+    button{padding:18px 0 18px 20px;color:#f5f5f0;background:transparent;border:0;cursor:pointer;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+    button:disabled{cursor:wait;opacity:.55}
+    .consent{grid-column:1/-1;display:flex;gap:10px;align-items:flex-start;margin:18px 0 0;text-align:left;color:#a6a69f;font-size:.78rem;line-height:1.45;letter-spacing:.03em}
+    .consent input{margin-top:2px;accent-color:#f5f5f0}
+    .message{grid-column:1/-1;min-height:1.3em;margin:14px 0 0;color:#8e8e88;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+    .message.success{color:#f5f5f0}
+    footer{border-top:1px solid #2a2a28;padding:34px 28px 40px}
+    .footer-inner{width:min(760px,100%);margin:0 auto}
+    .footer-title{margin:0 0 18px;font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:#a6a69f}
+    .footer-form .email-input{font-size:1rem;padding:14px 0}
+    .footer-form button{padding:14px 0 14px 20px;font-size:.78rem}
+    @media(max-width:620px){
+      h1{margin-bottom:46px}
+      .signup-form{grid-template-columns:1fr;gap:0}
+      button{padding:16px 0;text-align:left}
+      footer{padding-inline:22px}
+    }
   </style>
 </head>
 <body>
   <main>
     <div class="gate">
       <h1>If you ain’t paying,<br>you’re what’s being sold.</h1>
-      <form class="form" id="email-form" novalidate>
-        <input class="email-input" id="email" type="email" autocomplete="email" placeholder="Your email address" required aria-label="Email address">
-        <button id="submit" type="submit">Subscribe →</button>
-        <label class="consent" for="consent">
-          <input id="consent" type="checkbox" required>
+      <form class="signup-form" novalidate data-signup-form>
+        <input class="email-input" type="email" autocomplete="email" placeholder="Your email address" required aria-label="Email address">
+        <button type="submit">Subscribe →</button>
+        <label class="consent">
+          <input type="checkbox" required>
           <span>I agree to receive occasional SKiDROSCOPE editorial updates. My address will not be sold or shared.</span>
         </label>
-        <p class="error" id="error" role="alert" aria-live="polite"></p>
+        <p class="message" role="alert" aria-live="polite"></p>
       </form>
     </div>
   </main>
+
+  <footer>
+    <div class="footer-inner">
+      <p class="footer-title">Stay inside the signal</p>
+      <form class="signup-form footer-form" novalidate data-signup-form>
+        <input class="email-input" type="email" autocomplete="email" placeholder="Your email address" required aria-label="Email address">
+        <button type="submit">Subscribe →</button>
+        <label class="consent">
+          <input type="checkbox" required>
+          <span>I agree to receive occasional SKiDROSCOPE editorial updates. My address will not be sold or shared.</span>
+        </label>
+        <p class="message" role="alert" aria-live="polite"></p>
+      </form>
+    </div>
+  </footer>
+
   <script>
-    const form=document.getElementById('email-form');
-    const email=document.getElementById('email');
-    const consent=document.getElementById('consent');
-    const error=document.getElementById('error');
-    const submit=document.getElementById('submit');
     const endpoint='https://guujnlydcqhpedmcrtnz.supabase.co/functions/v1/subscribe';
 
-    form.addEventListener('submit',async e=>{
-      e.preventDefault();
-      error.classList.remove('success');
-      error.textContent='';
+    document.querySelectorAll('[data-signup-form]').forEach(form=>{
+      const email=form.querySelector('input[type="email"]');
+      const consent=form.querySelector('input[type="checkbox"]');
+      const message=form.querySelector('.message');
+      const submit=form.querySelector('button[type="submit"]');
 
-      if(!email.value.trim()||!email.checkValidity()){
-        error.textContent='Drop a valid email first.';
-        email.focus();
-        return;
-      }
+      form.addEventListener('submit',async event=>{
+        event.preventDefault();
+        message.classList.remove('success');
+        message.textContent='';
 
-      if(!consent.checked){
-        error.textContent='Check the consent box, then press Subscribe.';
-        consent.focus();
-        return;
-      }
+        if(!email.value.trim()||!email.checkValidity()){
+          message.textContent='Enter a valid email address.';
+          email.focus();
+          return;
+        }
 
-      submit.disabled=true;
-      submit.textContent='Saving…';
+        if(!consent.checked){
+          message.textContent='Check the consent box, then press Subscribe.';
+          consent.focus();
+          return;
+        }
 
-      try{
-        const response=await fetch(endpoint,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({email:email.value.trim(),consent:true})
-        });
-        const result=await response.json().catch(()=>({}));
-        if(!response.ok)throw new Error(result.error||'Subscription could not be completed.');
+        submit.disabled=true;
+        submit.textContent='Saving…';
 
-        localStorage.setItem('skidroscope_email',email.value.trim());
-        error.classList.add('success');
-        error.textContent='Address saved. Welcome to SKiDROSCOPE.';
-        submit.textContent='Saved ✓';
-        email.disabled=true;
-        consent.disabled=true;
-      }catch(err){
-        error.textContent=err.message||'Subscription could not be completed.';
-        submit.disabled=false;
-        submit.textContent='Subscribe →';
-      }
+        try{
+          const response=await fetch(endpoint,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({email:email.value.trim(),consent:true})
+          });
+          const result=await response.json().catch(()=>({}));
+          if(!response.ok)throw new Error(result.error||'Subscription could not be completed.');
+
+          localStorage.setItem('skidroscope_email',email.value.trim().toLowerCase());
+          message.classList.add('success');
+          message.textContent='Address saved. Welcome to SKiDROSCOPE.';
+          submit.textContent='Saved ✓';
+          email.disabled=true;
+          consent.disabled=true;
+
+          document.querySelectorAll('[data-signup-form]').forEach(otherForm=>{
+            if(otherForm===form)return;
+            const otherEmail=otherForm.querySelector('input[type="email"]');
+            const otherConsent=otherForm.querySelector('input[type="checkbox"]');
+            const otherMessage=otherForm.querySelector('.message');
+            const otherSubmit=otherForm.querySelector('button[type="submit"]');
+            otherEmail.value=email.value;
+            otherEmail.disabled=true;
+            otherConsent.checked=true;
+            otherConsent.disabled=true;
+            otherSubmit.disabled=true;
+            otherSubmit.textContent='Saved ✓';
+            otherMessage.classList.add('success');
+            otherMessage.textContent='Address saved. Welcome to SKiDROSCOPE.';
+          });
+        }catch(error){
+          message.textContent=error.message||'Subscription could not be completed.';
+          submit.disabled=false;
+          submit.textContent='Subscribe →';
+        }
+      });
     });
   </script>
 </body>
