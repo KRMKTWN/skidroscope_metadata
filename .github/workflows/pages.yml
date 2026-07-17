@@ -128,7 +128,7 @@ jobs:
               path.write_text(html, encoding='utf-8')
           PY
 
-      - name: Add email gate over original homepage
+      - name: Add verified email gate over original homepage
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -144,9 +144,12 @@ jobs:
             #skidroscope-gate h1{margin:0 0 64px;font-size:clamp(2.4rem,8vw,6.5rem);line-height:.9;letter-spacing:-.065em;text-transform:uppercase;font-weight:900}
             #skidroscope-gate form{display:grid;grid-template-columns:1fr auto;border-bottom:2px solid #f5f5f0;gap:16px;align-items:center}
             #skidroscope-gate input,#skidroscope-gate button{font:inherit}
-            #skidroscope-gate input{min-width:0;padding:18px 0;color:#f5f5f0;background:transparent;border:0;outline:0;font-size:clamp(1rem,3vw,1.45rem)}
+            #skidroscope-gate input[type="email"]{min-width:0;padding:18px 0;color:#f5f5f0;background:transparent;border:0;outline:0;font-size:clamp(1rem,3vw,1.45rem)}
             #skidroscope-gate input::placeholder{color:#8e8e88;text-transform:uppercase}
             #skidroscope-gate button{padding:18px 0 18px 20px;color:#f5f5f0;background:transparent;border:0;cursor:pointer;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+            #skidroscope-gate button:disabled{cursor:wait;opacity:.55}
+            #skidroscope-gate .gate-consent{display:flex;gap:10px;align-items:flex-start;margin:18px 0 0;text-align:left;color:#a6a69f;font-size:.78rem;line-height:1.45;letter-spacing:.03em}
+            #skidroscope-gate .gate-consent input{margin-top:2px;accent-color:#f5f5f0}
             #skidroscope-gate .gate-error{min-height:1.3em;margin:14px 0 0;color:#8e8e88;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
             @media(max-width:620px){#skidroscope-gate h1{margin-bottom:46px}#skidroscope-gate form{grid-template-columns:1fr;gap:0}#skidroscope-gate button{padding:16px 0;text-align:left}}
           </style>
@@ -155,9 +158,13 @@ jobs:
               <h1>If you ain’t paying,<br>you’re what’s being sold.</h1>
               <form id="skidroscope-email-form" novalidate>
                 <input id="skidroscope-email" type="email" autocomplete="email" placeholder="Your email address" required aria-label="Email address">
-                <button type="submit">Enter →</button>
+                <button id="skidroscope-submit" type="submit">Enter →</button>
               </form>
-              <p class="gate-error" id="skidroscope-error" role="alert"></p>
+              <label class="gate-consent" for="skidroscope-consent">
+                <input id="skidroscope-consent" type="checkbox" required>
+                <span>I agree to receive occasional SKiDROSCOPE editorial updates. My address will not be sold or shared.</span>
+              </label>
+              <p class="gate-error" id="skidroscope-error" role="alert" aria-live="polite"></p>
             </div>
           </div>
           <script>
@@ -165,17 +172,56 @@ jobs:
               const gate=document.getElementById('skidroscope-gate');
               const form=document.getElementById('skidroscope-email-form');
               const email=document.getElementById('skidroscope-email');
+              const consent=document.getElementById('skidroscope-consent');
+              const submit=document.getElementById('skidroscope-submit');
               const error=document.getElementById('skidroscope-error');
-              form.addEventListener('submit',(event)=>{
+              const endpoint='https://guujnlydcqhpedmcrtnz.supabase.co/functions/v1/subscribe';
+
+              form.addEventListener('submit',async event=>{
                 event.preventDefault();
-                if(!email.value.trim()||!email.checkValidity()){
+                event.stopPropagation();
+                error.textContent='';
+                const normalized=email.value.trim().toLowerCase();
+
+                if(!normalized||!email.checkValidity()){
                   error.textContent='Drop a valid email first.';
                   email.focus();
                   return;
                 }
-                localStorage.setItem('skidroscope_email',email.value.trim());
-                gate.remove();
-                document.getElementById('skidroscope-gate-style')?.remove();
+                if(!consent.checked){
+                  error.textContent='Please confirm your subscription.';
+                  consent.focus();
+                  return;
+                }
+
+                submit.disabled=true;
+                submit.textContent='Saving…';
+                const controller=new AbortController();
+                const timeout=setTimeout(()=>controller.abort(),12000);
+
+                try{
+                  const response=await fetch(endpoint+'?v=20260717-3',{
+                    method:'POST',
+                    mode:'cors',
+                    cache:'no-store',
+                    credentials:'omit',
+                    headers:{'Content-Type':'application/json','Accept':'application/json'},
+                    body:JSON.stringify({email:normalized,consent:true,source:'github_pages_gate'}),
+                    signal:controller.signal
+                  });
+                  const result=await response.json().catch(()=>({}));
+                  if(!response.ok) throw new Error(result.error||'Subscription could not be completed.');
+
+                  localStorage.setItem('skidroscope_email',normalized);
+                  gate.remove();
+                  document.getElementById('skidroscope-gate-style')?.remove();
+                }catch(err){
+                  error.textContent=err.name==='AbortError'?'Connection timed out. Try again.':(err.message||'Subscription could not be completed.');
+                  submit.disabled=false;
+                  submit.textContent='Enter →';
+                }finally{
+                  clearTimeout(timeout);
+                }
               });
             })();
           </script>
