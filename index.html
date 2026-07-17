@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>SKiDROSCOPE</title>
   <style>
     *{box-sizing:border-box}
@@ -68,6 +71,27 @@
   <script>
     const endpoint='https://guujnlydcqhpedmcrtnz.supabase.co/functions/v1/subscribe';
 
+    async function saveSubscriber(email){
+      const controller=new AbortController();
+      const timeout=setTimeout(()=>controller.abort(),12000);
+      try{
+        const response=await fetch(endpoint+'?v=20260717-2',{
+          method:'POST',
+          mode:'cors',
+          cache:'no-store',
+          credentials:'omit',
+          headers:{'Content-Type':'application/json','Accept':'application/json'},
+          body:JSON.stringify({email,consent:true,source:'github_pages'}),
+          signal:controller.signal
+        });
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error(result.error||'Subscription could not be completed.');
+        return result;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
     document.querySelectorAll('[data-signup-form]').forEach(form=>{
       const email=form.querySelector('input[type="email"]');
       const consent=form.querySelector('input[type="checkbox"]');
@@ -76,15 +100,16 @@
 
       form.addEventListener('submit',async event=>{
         event.preventDefault();
+        event.stopPropagation();
         message.classList.remove('success');
         message.textContent='';
 
-        if(!email.value.trim()||!email.checkValidity()){
+        const normalized=email.value.trim().toLowerCase();
+        if(!normalized||!email.checkValidity()){
           message.textContent='Enter a valid email address.';
           email.focus();
           return;
         }
-
         if(!consent.checked){
           message.textContent='Check the consent box, then press Subscribe.';
           consent.focus();
@@ -95,15 +120,8 @@
         submit.textContent='Saving…';
 
         try{
-          const response=await fetch(endpoint,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({email:email.value.trim(),consent:true})
-          });
-          const result=await response.json().catch(()=>({}));
-          if(!response.ok)throw new Error(result.error||'Subscription could not be completed.');
-
-          localStorage.setItem('skidroscope_email',email.value.trim().toLowerCase());
+          await saveSubscriber(normalized);
+          localStorage.setItem('skidroscope_email',normalized);
           message.classList.add('success');
           message.textContent='Address saved. Welcome to SKiDROSCOPE.';
           submit.textContent='Saved ✓';
@@ -111,12 +129,11 @@
           consent.disabled=true;
 
           document.querySelectorAll('[data-signup-form]').forEach(otherForm=>{
-            if(otherForm===form)return;
             const otherEmail=otherForm.querySelector('input[type="email"]');
             const otherConsent=otherForm.querySelector('input[type="checkbox"]');
             const otherMessage=otherForm.querySelector('.message');
             const otherSubmit=otherForm.querySelector('button[type="submit"]');
-            otherEmail.value=email.value;
+            otherEmail.value=normalized;
             otherEmail.disabled=true;
             otherConsent.checked=true;
             otherConsent.disabled=true;
@@ -126,7 +143,8 @@
             otherMessage.textContent='Address saved. Welcome to SKiDROSCOPE.';
           });
         }catch(error){
-          message.textContent=error.message||'Subscription could not be completed.';
+          console.error('SKiDROSCOPE subscription error',error);
+          message.textContent=error.name==='AbortError'?'Connection timed out. Try again.':(error.message||'Subscription could not be completed.');
           submit.disabled=false;
           submit.textContent='Subscribe →';
         }
